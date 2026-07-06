@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>페인트7 | 방수·도장·시설물 유지관리 전문</title>
+<meta name="description" content="아파트 관리사무소 의뢰 전문. 옥상방수, 주차장 바닥, 창문 실리콘, 고층 로프작업, 외벽 도색. 물 들어가는 곳을 막아야 진짜 누수 전문가, 페인트7.">
+<style>
+:root{
+  --navy:#0C2D53; --navy2:#0C447C; --blue:#378ADD; --blue-l:#B5D4F4; --blue-xl:#E6F1FB;
+  --red:#E24B4A; --red-d:#C33837; --amber:#EF9F27; --green:#97C459; --teal:#5DCAA5;
+  --ink:#2C2C2A; --muted:#666; --line:#e5e7eb; --bg:#F8F9FA; --bg2:#F0F4F8;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;color:var(--ink);line-height:1.6}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+header{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);z-index:100}
+.nav{display:flex;justify-content:space-between;align-items:center;height:64px}
+.logo{font-size:24px;font-weight:800;text-decoration:none}
+.logo .p{color:var(--blue)}.logo .n7{color:var(--red)}
+.menu{display:flex;gap:24px;align-items:center;font-size:15px}
+.menu a{color:var(--ink);text-decoration:none}
+.menu a:hover{color:var(--navy2)}
+.call-btn{background:var(--red);color:#fff !important;padding:8px 16px;border-radius:8px;font-weight:700}
+.hero{background:var(--navy);color:#fff;text-align:center;padding:80px 20px}
+.hero h1{font-size:34px;font-weight:800;line-height:1.5}
+.hero .sub{margin-top:14px;color:var(--blue-l);font-size:17px}
+.hero .btns{margin-top:28px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn{display:inline-block;padding:13px 28px;border-radius:8px;font-size:16px;font-weight:700;text-decoration:none}
+.btn-red{background:var(--red);color:#fff}
+.btn-red:hover{background:var(--red-d)}
+.btn-line{border:1px solid var(--blue-l);color:var(--blue-l)}
+.btn-line:hover{background:rgba(255,255,255,.1)}
+section{padding:64px 0}
+.sec-title{font-size:26px;font-weight:800;text-align:center;margin-bottom:8px}
+.sec-sub{text-align:center;color:var(--muted);margin-bottom:36px;font-size:15px}
+.services{background:var(--bg)}
+.svc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
+.svc{background:#fff;border:1px solid var(--line);border-top:4px solid;padding:24px 16px;text-align:center}
+.svc .ico{font-size:34px}
+.svc h3{font-size:17px;margin:10px 0 6px}
+.svc p{font-size:13px;color:var(--muted)}
+.steps{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap}
+.step{background:var(--blue-xl);color:var(--navy2);padding:14px 18px;border-radius:10px;text-align:center;min-width:110px}
+.step b{display:block;font-size:13px;color:var(--blue)}
+.step span{font-size:15px;font-weight:700}
+.arrow{color:#bbb;font-size:18px}
+.request{background:var(--bg2)}
+.form-card{max-width:640px;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:12px;padding:32px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:14px;font-weight:700;margin-bottom:6px}
+.field label .req{color:var(--red)}
+input,select,textarea{width:100%;padding:11px 12px;border:1px solid #cfd6de;border-radius:8px;font-size:15px;font-family:inherit;background:#fff}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--blue);border-color:var(--blue)}
+textarea{resize:vertical;min-height:110px}
+.submit{width:100%;background:var(--red);color:#fff;border:none;padding:14px;border-radius:8px;font-size:17px;font-weight:700;cursor:pointer}
+.submit:hover{background:var(--red-d)}
+.form-note{font-size:13px;color:var(--muted);text-align:center;margin-top:12px}
+footer{background:var(--navy);color:var(--blue-l);padding:36px 20px;font-size:14px}
+footer .foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+footer a{color:#fff;text-decoration:none}
+.copy{margin-top:16px;font-size:12px;color:#5f7ea3}
+@media (max-width:640px){
+  .menu a:not(.call-btn){display:none}
+  .hero h1{font-size:26px}
+  .row{grid-template-columns:1fr}
+  .steps{flex-direction:column}
+  .arrow{transform:rotate(90deg)}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a class="logo" href="#"><span class="p">Paint</span> <span class="n7">7</span></a>
+    <nav class="menu">
+      <a href="#services">서비스</a>
+      <a href="#process">시공절차</a>
+      <a href="#request">의뢰 접수</a>
+      <a class="call-btn" href="tel:010-8320-7780">&#128222; 010-8320-7780</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <h1>"물 들어가는 곳을 막아야<br>진짜 누수 전문가"</h1>
+  <p class="sub">방수 · 도장 · 시설물 유지관리 | 아파트 관리사무소 의뢰 전문 | 2021년부터 시공</p>
+  <div class="btns">
+    <a class="btn btn-red" href="#request">공사 의뢰 접수</a>
+    <a class="btn btn-line" href="tel:010-8320-7780">전화 상담</a>
+  </div>
+</section>
+
+<section class="services" id="services">
+  <div class="wrap">
+    <h2 class="sec-title">주요 서비스</h2>
+    <p class="sec-sub">아파트·빌딩·상가 등 건물 전반의 방수와 도장, 유지관리를 책임집니다</p>
+    <div class="svc-grid">
+      <div class="svc" style="border-top-color:var(--red)">
+        <div class="ico">&#128167;</div><h3>옥상방수</h3><p>우레탄·시트 방수, 누수 원인 진단 및 보수</p>
+      </div>
+      <div class="svc" style="border-top-color:var(--amber)">
+        <div class="ico">&#128663;</div><h3>주차장 바닥</h3><p>에폭시·우레탄 바닥, 라인 도색</p>
+      </div>
+      <div class="svc" style="border-top-color:var(--green)">
+        <div class="ico">&#129695;</div><h3>창문 실리콘</h3><p>창호 코킹 교체, 외벽 틈새 누수 차단</p>
+      </div>
+      <div class="svc" style="border-top-color:var(--blue)">
+        <div class="ico">&#129699;</div><h3>고층 로프작업</h3><p>로프 접근 외벽 보수·도장·실리콘</p>
+      </div>
+      <div class="svc" style="border-top-color:var(--teal)">
+        <div class="ico">&#128396;&#65039;</div><h3>외벽 도색</h3><p>아파트·건물 외벽 재도장, 균열 보수</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="process">
+  <div class="wrap">
+    <h2 class="sec-title">시공 절차</h2>
+    <p class="sec-sub">접수부터 A/S까지 한 번에 진행됩니다</p>
+    <div class="steps">
+      <div class="step"><b>STEP 1</b><span>의뢰 접수</span></div><div class="arrow">→</div>
+      <div class="step"><b>STEP 2</b><span>현장 실사</span></div><div class="arrow">→</div>
+      <div class="step"><b>STEP 3</b><span>견적 제출</span></div><div class="arrow">→</div>
+      <div class="step"><b>STEP 4</b><span>시공</span></div><div class="arrow">→</div>
+      <div class="step"><b>STEP 5</b><span>A/S</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="request" id="request">
+  <div class="wrap">
+    <h2 class="sec-title">공사 의뢰 접수</h2>
+    <p class="sec-sub">관리사무소 소장님, 아래 양식을 작성하시면 이메일로 바로 접수됩니다</p>
+    <div class="form-card">
+      <form id="reqForm">
+        <div class="row">
+          <div class="field">
+            <label>단지명 / 건물명 <span class="req">*</span></label>
+            <input type="text" id="f_site" required placeholder="OO아파트">
+          </div>
+          <div class="field">
+            <label>담당자 성함 (직책) <span class="req">*</span></label>
+            <input type="text" id="f_name" required placeholder="홍길동 소장">
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>연락처 <span class="req">*</span></label>
+            <input type="tel" id="f_phone" required placeholder="010-0000-0000">
+          </div>
+          <div class="field">
+            <label>공사 종류 <span class="req">*</span></label>
+            <select id="f_type" required>
+              <option value="">선택하세요</option>
+              <option>옥상방수</option>
+              <option>주차장 바닥</option>
+              <option>창문 실리콘</option>
+              <option>고층 로프작업</option>
+              <option>외벽 도색</option>
+              <option>기타 / 복합 공사</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>공사 내용</label>
+          <textarea id="f_detail" placeholder="공사 위치, 증상(누수 부위 등), 희망 시기 등을 적어주세요"></textarea>
+        </div>
+        <button type="submit" class="submit">의뢰 접수하기</button>
+        <p class="form-note">접수 버튼을 누르면 메일 앱이 열립니다. 그대로 '보내기'만 눌러주세요.<br>급하신 경우 <a href="tel:010-8320-7780" style="color:var(--navy2);font-weight:700">010-8320-7780</a>으로 전화 주세요.</p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div>
+        <strong style="color:#fff">페인트7</strong> (사업자등록번호 103-23-01383)<br>
+        사업총괄 배효철 실장 · <a href="tel:010-8320-7780">010-8320-7780</a> · <a href="mailto:majam@naver.com">majam@naver.com</a>
+      </div>
+      <div>
+        서울시 강서구 까치산로4길 38, 504호<br>
+        업종: 도장 공사업 · 미장, 타일 및 방수 공사업 · 시설물 유지관리 공사업
+      </div>
+    </div>
+    <div class="copy">© Paint 7. All rights reserved.</div>
+  </div>
+</footer>
+
+<script>
+document.getElementById('reqForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  var site = document.getElementById('f_site').value.trim();
+  var name = document.getElementById('f_name').value.trim();
+  var phone = document.getElementById('f_phone').value.trim();
+  var type = document.getElementById('f_type').value;
+  var detail = document.getElementById('f_detail').value.trim();
+  var subject = '[공사 의뢰] ' + site + ' - ' + type;
+  var body = '단지명/건물명: ' + site + '\n'
+    + '담당자: ' + name + '\n'
+    + '연락처: ' + phone + '\n'
+    + '공사 종류: ' + type + '\n'
+    + '공사 내용:\n' + (detail || '(미기재)') + '\n\n'
+    + '- 페인트7 홈페이지에서 접수됨';
+  location.href = 'mailto:majam@naver.com?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+});
+</script>
+
+</body>
+  </html>
