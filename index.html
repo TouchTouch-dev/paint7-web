@@ -190,9 +190,10 @@ footer a{color:#fff;text-decoration:none}
           <textarea id="f_detail" name="공사내용" placeholder="공사 위치, 증상(누수 부위 등), 희망 시기 등을 적어주세요"></textarea>
         </div>
         <div class="field">
-          <label>현장 사진 첨부 <span style="font-weight:400;color:var(--muted)">(선택, 합계 10MB까지)</span></label>
+          <label>현장 사진 첨부 <span style="font-weight:400;color:var(--muted)">(선택)</span></label>
           <input type="file" id="f_files" name="attachment" accept="image/*" multiple>
-          <p class="err" id="fileErr">첨부 파일 합계가 10MB를 넘습니다. 사진 수를 줄이거나 용량을 줄여주세요.</p>
+          <p style="font-size:12px;color:var(--muted);margin-top:4px" id="fileInfo">사진은 자동으로 용량이 압축되어 전송됩니다.</p>
+          <p class="err" id="fileErr">사진 용량이 너무 큽니다(자동 압축 후에도 10MB 초과). 사진 수를 줄여주세요.</p>
           <p style="font-size:12px;color:var(--muted);margin-top:4px">동영상은 용량 제한으로 첨부가 어렵습니다. <b>010-8320-7780</b>으로 문자/카톡 전송 부탁드립니다.</p>
         </div>
         <button type="submit" class="submit" id="submitBtn">의뢰 접수하기</button>
@@ -273,10 +274,54 @@ function totalFileSize(){
   for (var i = 0; i < fileInput.files.length; i++) t += fileInput.files[i].size;
   return t;
 }
+
+var fileInfo = document.getElementById('fileInfo');
+var MAX_DIM = 1600;
+var JPEG_Q = 0.8;
+
+function fmtMB(b){ return (b / 1048576).toFixed(1) + 'MB'; }
+
+function compressImage(file){
+  return new Promise(function(resolve){
+    if (!/^image\/(jpeg|png|webp|heic|heif)/i.test(file.type) || file.size < 400 * 1024) { resolve(file); return; }
+    var img = new Image();
+    var url = URL.createObjectURL(file);
+    img.onload = function(){
+      var w = img.width, h = img.height;
+      if (w > MAX_DIM || h > MAX_DIM) {
+        var r = Math.min(MAX_DIM / w, MAX_DIM / h);
+        w = Math.round(w * r); h = Math.round(h * r);
+      }
+      var canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      canvas.toBlob(function(blob){
+        URL.revokeObjectURL(url);
+        if (blob && blob.size < file.size) {
+          resolve(new File([blob], file.name.replace(/\.\w+$/, '') + '.jpg', {type: 'image/jpeg'}));
+        } else resolve(file);
+      }, 'image/jpeg', JPEG_Q);
+    };
+    img.onerror = function(){ URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+}
+
 fileInput.addEventListener('change', function(){
-  var over = totalFileSize() > MAX_FILES;
-  fileErr.style.display = over ? 'block' : 'none';
-  if (over) this.classList.add('invalid'); else this.classList.remove('invalid');
+  var files = [...fileInput.files];
+  if (!files.length) { fileErr.style.display = 'none'; return; }
+  var before = totalFileSize();
+  fileInfo.textContent = '사진 압축 중...';
+  Promise.all(files.map(compressImage)).then(function(compressed){
+    var dt = new DataTransfer();
+    compressed.forEach(function(f){ dt.items.add(f); });
+    fileInput.files = dt.files;
+    var after = totalFileSize();
+    fileInfo.textContent = compressed.length + '장 첨부 · ' + fmtMB(before) + ' → ' + fmtMB(after) + ' (자동 압축됨)';
+    var over = after > MAX_FILES;
+    fileErr.style.display = over ? 'block' : 'none';
+    if (over) fileInput.classList.add('invalid'); else fileInput.classList.remove('invalid');
+  });
 });
 
 document.getElementById('reqForm').addEventListener('submit', function(e){
