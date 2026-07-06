@@ -57,6 +57,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--blue);border-col
 textarea{resize:vertical;min-height:110px}
 .submit{width:100%;background:var(--red);color:#fff;border:none;padding:14px;border-radius:8px;font-size:17px;font-weight:700;cursor:pointer}
 .submit:hover{background:var(--red-d)}
+.submit:disabled{background:#caa}
 .form-note{font-size:13px;color:var(--muted);text-align:center;margin-top:12px}
 .addr-row{display:flex;gap:8px}
 .addr-row input{flex:1}
@@ -142,34 +143,38 @@ footer a{color:#fff;text-decoration:none}
     <h2 class="sec-title">공사 의뢰 접수</h2>
     <p class="sec-sub">관리사무소 소장님, 아래 양식을 작성하시면 이메일로 바로 접수됩니다</p>
     <div class="form-card">
-      <form id="reqForm">
+      <form id="reqForm" action="https://formsubmit.co/majam@naver.com" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="_subject" id="f_subject" value="[공사 의뢰] 홈페이지 접수">
+        <input type="hidden" name="_template" value="table">
+        <input type="hidden" name="_captcha" value="false">
+        <input type="hidden" name="_next" value="https://paint777.vercel.app/?sent=1#request">
         <div class="row">
           <div class="field">
             <label>단지명 / 건물명 <span class="req">*</span></label>
-            <input type="text" id="f_site" required placeholder="OO아파트">
+            <input type="text" id="f_site" name="단지명/건물명" required placeholder="OO아파트">
           </div>
           <div class="field">
             <label>담당자 성함 (직책) <span class="req">*</span></label>
-            <input type="text" id="f_name" required placeholder="홍길동 소장">
+            <input type="text" id="f_name" name="담당자" required placeholder="홍길동 소장">
           </div>
         </div>
         <div class="field">
           <label>주소 <span class="req">*</span></label>
           <div class="addr-row">
-            <input type="text" id="f_addr" required readonly placeholder="주소 검색 버튼을 눌러주세요">
+            <input type="text" id="f_addr" name="주소" required readonly placeholder="주소 검색 버튼을 눌러주세요">
             <button type="button" class="addr-btn" id="addrBtn">주소 검색</button>
           </div>
-          <input type="text" id="f_addr2" placeholder="상세 주소 (동/호수 등)" style="margin-top:8px">
+          <input type="text" id="f_addr2" name="상세주소" placeholder="상세 주소 (동/호수 등)" style="margin-top:8px">
         </div>
         <div class="row">
           <div class="field">
             <label>연락처 <span class="req">*</span></label>
-            <input type="tel" id="f_phone" required inputmode="numeric" maxlength="13" placeholder="010-0000-0000">
+            <input type="tel" id="f_phone" name="연락처" required inputmode="numeric" maxlength="13" placeholder="010-0000-0000">
             <p class="err" id="phoneErr">올바른 전화번호 형식이 아닙니다. 예: 010-1234-5678, 02-123-4567</p>
           </div>
           <div class="field">
             <label>공사 종류 <span class="req">*</span></label>
-            <select id="f_type" required>
+            <select id="f_type" name="공사종류" required>
               <option value="">선택하세요</option>
               <option>옥상방수</option>
               <option>주차장 바닥</option>
@@ -182,10 +187,16 @@ footer a{color:#fff;text-decoration:none}
         </div>
         <div class="field">
           <label>공사 내용</label>
-          <textarea id="f_detail" placeholder="공사 위치, 증상(누수 부위 등), 희망 시기 등을 적어주세요"></textarea>
+          <textarea id="f_detail" name="공사내용" placeholder="공사 위치, 증상(누수 부위 등), 희망 시기 등을 적어주세요"></textarea>
         </div>
-        <button type="submit" class="submit">의뢰 접수하기</button>
-        <p class="form-note">접수 버튼을 누르면 메일 앱이 열립니다. 그대로 '보내기'만 눌러주세요.<br>급하신 경우 <a href="tel:010-8320-7780" style="color:var(--navy2);font-weight:700">010-8320-7780</a>으로 전화 주세요.</p>
+        <div class="field">
+          <label>현장 사진 첨부 <span style="font-weight:400;color:var(--muted)">(선택, 합계 10MB까지)</span></label>
+          <input type="file" id="f_files" name="attachment" accept="image/*" multiple>
+          <p class="err" id="fileErr">첨부 파일 합계가 10MB를 넘습니다. 사진 수를 줄이거나 용량을 줄여주세요.</p>
+          <p style="font-size:12px;color:var(--muted);margin-top:4px">동영상은 용량 제한으로 첨부가 어렵습니다. <b>010-8320-7780</b>으로 문자/카톡 전송 부탁드립니다.</p>
+        </div>
+        <button type="submit" class="submit" id="submitBtn">의뢰 접수하기</button>
+        <p class="form-note">접수 버튼을 누르면 내용이 바로 이메일로 전송됩니다.<br>급하신 경우 <a href="tel:010-8320-7780" style="color:var(--navy2);font-weight:700">010-8320-7780</a>으로 전화 주세요.</p>
       </form>
     </div>
   </div>
@@ -253,26 +264,40 @@ function validatePhone(){
 }
 phoneInput.addEventListener('blur', function(){ if (this.value) validatePhone(); });
 
-document.getElementById('reqForm').addEventListener('submit', function(e){
-  e.preventDefault();
-  if (!validatePhone()) { phoneInput.focus(); return; }
-  var site = document.getElementById('f_site').value.trim();
-  var name = document.getElementById('f_name').value.trim();
-  var addr = document.getElementById('f_addr').value.trim();
-  var addr2 = document.getElementById('f_addr2').value.trim();
-  var phone = phoneInput.value.trim();
-  var type = document.getElementById('f_type').value;
-  var detail = document.getElementById('f_detail').value.trim();
-  var subject = '[공사 의뢰] ' + site + ' - ' + type;
-  var body = '단지명/건물명: ' + site + '\n'
-    + '주소: ' + addr + (addr2 ? ' ' + addr2 : '') + '\n'
-    + '담당자: ' + name + '\n'
-    + '연락처: ' + phone + '\n'
-    + '공사 종류: ' + type + '\n'
-    + '공사 내용:\n' + (detail || '(미기재)') + '\n\n'
-    + '- 페인트7 홈페이지에서 접수됨';
-  location.href = 'mailto:majam@naver.com?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+var fileInput = document.getElementById('f_files');
+var fileErr = document.getElementById('fileErr');
+var MAX_FILES = 10 * 1024 * 1024;
+
+function totalFileSize(){
+  var t = 0;
+  for (var i = 0; i < fileInput.files.length; i++) t += fileInput.files[i].size;
+  return t;
+}
+fileInput.addEventListener('change', function(){
+  var over = totalFileSize() > MAX_FILES;
+  fileErr.style.display = over ? 'block' : 'none';
+  if (over) this.classList.add('invalid'); else this.classList.remove('invalid');
 });
+
+document.getElementById('reqForm').addEventListener('submit', function(e){
+  if (!validatePhone()) { e.preventDefault(); phoneInput.focus(); return; }
+  if (totalFileSize() > MAX_FILES) { e.preventDefault(); fileErr.style.display = 'block'; fileInput.focus(); return; }
+  var site = document.getElementById('f_site').value.trim();
+  var type = document.getElementById('f_type').value;
+  document.getElementById('f_subject').value = '[공사 의뢰] ' + site + ' - ' + type;
+  var btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = '전송 중...';
+});
+
+if (location.search.indexOf('sent=1') !== -1) {
+  var card = document.querySelector('.form-card');
+  var ok = document.createElement('div');
+  ok.style.cssText = 'background:#EAF3DE;color:#27500A;border-radius:8px;padding:14px;text-align:center;font-weight:700;margin-bottom:16px';
+  ok.textContent = '접수가 완료되었습니다. 확인 후 빠르게 연락드리겠습니다.';
+  card.insertBefore(ok, card.firstChild);
+  history.replaceState(null, '', location.pathname + '#request');
+}
 </script>
 
 </body>
