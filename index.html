@@ -58,6 +58,11 @@ textarea{resize:vertical;min-height:110px}
 .submit{width:100%;background:var(--red);color:#fff;border:none;padding:14px;border-radius:8px;font-size:17px;font-weight:700;cursor:pointer}
 .submit:hover{background:var(--red-d)}
 .form-note{font-size:13px;color:var(--muted);text-align:center;margin-top:12px}
+.addr-row{display:flex;gap:8px}
+.addr-row input{flex:1}
+.addr-btn{flex:none;background:var(--navy2);color:#fff;border:none;padding:0 16px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer}
+.err{display:none;font-size:12px;color:var(--red);margin-top:4px}
+input.invalid{border-color:var(--red);outline:2px solid var(--red)}
 footer{background:var(--navy);color:var(--blue-l);padding:36px 20px;font-size:14px}
 footer .foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 footer a{color:#fff;text-decoration:none}
@@ -148,10 +153,19 @@ footer a{color:#fff;text-decoration:none}
             <input type="text" id="f_name" required placeholder="홍길동 소장">
           </div>
         </div>
+        <div class="field">
+          <label>주소 <span class="req">*</span></label>
+          <div class="addr-row">
+            <input type="text" id="f_addr" required readonly placeholder="주소 검색 버튼을 눌러주세요">
+            <button type="button" class="addr-btn" id="addrBtn">주소 검색</button>
+          </div>
+          <input type="text" id="f_addr2" placeholder="상세 주소 (동/호수 등)" style="margin-top:8px">
+        </div>
         <div class="row">
           <div class="field">
             <label>연락처 <span class="req">*</span></label>
-            <input type="tel" id="f_phone" required placeholder="010-0000-0000">
+            <input type="tel" id="f_phone" required inputmode="numeric" maxlength="13" placeholder="010-0000-0000">
+            <p class="err" id="phoneErr">올바른 전화번호 형식이 아닙니다. 예: 010-1234-5678, 02-123-4567</p>
           </div>
           <div class="field">
             <label>공사 종류 <span class="req">*</span></label>
@@ -193,16 +207,65 @@ footer a{color:#fff;text-decoration:none}
   </div>
 </footer>
 
+<script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script>
+document.getElementById('addrBtn').addEventListener('click', function(){
+  new daum.Postcode({
+    oncomplete: function(data){
+      var addr = data.roadAddress || data.jibunAddress;
+      if (data.buildingName) addr += ' (' + data.buildingName + ')';
+      document.getElementById('f_addr').value = addr;
+      var site = document.getElementById('f_site');
+      if (!site.value && data.buildingName) site.value = data.buildingName;
+      document.getElementById('f_addr2').focus();
+    }
+  }).open();
+});
+
+var phoneInput = document.getElementById('f_phone');
+var phoneErr = document.getElementById('phoneErr');
+var PHONE_RE = /^(01[016789]-\d{3,4}-\d{4}|02-\d{3,4}-\d{4}|0[3-6][1-5]-\d{3,4}-\d{4}|070-\d{3,4}-\d{4}|050\d-\d{3,4}-\d{4}|1[5-9]\d{2}-\d{4})$/;
+
+phoneInput.addEventListener('input', function(){
+  var d = this.value.replace(/\D/g, '').slice(0, 11);
+  var out = d;
+  if (d.startsWith('02')) {
+    if (d.length > 9) out = d.slice(0,2) + '-' + d.slice(2,6) + '-' + d.slice(6,10);
+    else if (d.length > 5) out = d.slice(0,2) + '-' + d.slice(2, d.length-4) + '-' + d.slice(-4);
+    else if (d.length > 2) out = d.slice(0,2) + '-' + d.slice(2);
+  } else if (/^1[5-9]/.test(d)) {
+    if (d.length > 4) out = d.slice(0,4) + '-' + d.slice(4,8);
+  } else {
+    if (d.length > 10) out = d.slice(0,3) + '-' + d.slice(3,7) + '-' + d.slice(7,11);
+    else if (d.length > 6) out = d.slice(0,3) + '-' + d.slice(3, d.length-4) + '-' + d.slice(-4);
+    else if (d.length > 3) out = d.slice(0,3) + '-' + d.slice(3);
+  }
+  this.value = out;
+  this.classList.remove('invalid');
+  phoneErr.style.display = 'none';
+});
+
+function validatePhone(){
+  var ok = PHONE_RE.test(phoneInput.value);
+  phoneInput.classList.toggle('invalid', !ok);
+  phoneErr.style.display = ok ? 'none' : 'block';
+  return ok;
+}
+phoneInput.addEventListener('blur', function(){ if (this.value) validatePhone(); });
+
 document.getElementById('reqForm').addEventListener('submit', function(e){
   e.preventDefault();
+  if (!validatePhone()) { phoneInput.focus(); return; }
   var site = document.getElementById('f_site').value.trim();
   var name = document.getElementById('f_name').value.trim();
-  var phone = document.getElementById('f_phone').value.trim();
+  var addr = document.getElementById('f_addr').value.trim();
+  var addr2 = document.getElementById('f_addr2').value.trim();
+  var phone = phoneInput.value.trim();
   var type = document.getElementById('f_type').value;
   var detail = document.getElementById('f_detail').value.trim();
   var subject = '[공사 의뢰] ' + site + ' - ' + type;
   var body = '단지명/건물명: ' + site + '\n'
+    + '주소: ' + addr + (addr2 ? ' ' + addr2 : '') + '\n'
     + '담당자: ' + name + '\n'
     + '연락처: ' + phone + '\n'
     + '공사 종류: ' + type + '\n'
@@ -213,4 +276,4 @@ document.getElementById('reqForm').addEventListener('submit', function(e){
 </script>
 
 </body>
-  </html>
+</html>
