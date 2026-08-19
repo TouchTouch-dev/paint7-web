@@ -26,7 +26,7 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const { site, name, addr, addr2, phone, type, detail, files } = req.body || {};
+    const { site, name, addr, addr2, phone, email, type, detail, files } = req.body || {};
 
     if (!site || !name || !addr || !phone || !type) {
       res.status(400).json({ error: '필수 항목이 누락되었습니다.' });
@@ -47,14 +47,17 @@ module.exports = async function handler(req, res) {
       '<tr><td><b>담당자</b></td><td>' + escapeHtml(name) + '</td></tr>' +
       '<tr><td><b>주소</b></td><td>' + escapeHtml(addr) + ' ' + escapeHtml(addr2) + '</td></tr>' +
       '<tr><td><b>연락처</b></td><td>' + escapeHtml(phone) + '</td></tr>' +
+      (email ? '<tr><td><b>이메일</b></td><td>' + escapeHtml(email) + '</td></tr>' : '') +
       '<tr><td><b>공사종류</b></td><td>' + escapeHtml(type) + '</td></tr>' +
       '<tr><td valign="top"><b>공사내용</b></td><td>' + escapeHtml(detail).replace(/\n/g, '<br>') + '</td></tr>' +
       '</table>';
 
+    const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email || '');
+
     const payload = {
       sender: { name: '페인트7 홈페이지', email: process.env.BREVO_SENDER_EMAIL },
       to: [{ email: TO_EMAIL }],
-      replyTo: { email: process.env.BREVO_SENDER_EMAIL },
+      replyTo: isValidEmail ? { email: email } : { email: process.env.BREVO_SENDER_EMAIL },
       subject: '[공사 의뢰] ' + site + ' - ' + type,
       htmlContent: htmlContent
     };
