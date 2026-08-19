@@ -165,11 +165,7 @@ footer a{color:#fff;text-decoration:none}
     <h2 class="sec-title">공사 의뢰 접수</h2>
     <p class="sec-sub">관리사무소 소장님, 아래 양식을 작성하시면 이메일로 바로 접수됩니다</p>
     <div class="form-card">
-      <form id="reqForm" action="https://formsubmit.co/majam@naver.com" method="POST" enctype="multipart/form-data">
-        <input type="hidden" name="_subject" id="f_subject" value="[공사 의뢰] 홈페이지 접수">
-        <input type="hidden" name="_template" value="table">
-        <input type="hidden" name="_captcha" value="false">
-        <input type="hidden" name="_next" value="https://paint777.vercel.app/?sent=1">
+      <form id="reqForm">
         <div class="row">
           <div class="field">
             <label>단지명 / 건물명 <span class="req">*</span></label>
@@ -227,6 +223,7 @@ footer a{color:#fff;text-decoration:none}
           </label>
         </div>
         <button type="submit" class="submit" id="submitBtn">의뢰 접수하기</button>
+        <p class="err" id="submitErr" style="display:none">전송에 실패했습니다. 잠시 후 다시 시도하시거나 전화로 접수해주세요.</p>
         <p class="form-note">접수 즉시 이메일로 전송됩니다.<br>급하신 경우 <a href="tel:010-8320-7780" style="color:var(--navy2);font-weight:700">010-8320-7780</a></p>
       </form>
     </div>
@@ -255,7 +252,7 @@ footer a{color:#fff;text-decoration:none}
     <p><b>1. 수집 항목</b> — 성명(직책), 연락처, 단지명/건물명, 주소, 현장 사진(선택)</p>
     <p><b>2. 수집 목적</b> — 공사 의뢰 접수, 견적 산출, 상담 및 일정 안내</p>
     <p><b>3. 보유 및 이용 기간</b> — 목적 달성(상담·견적 완료) 후 지체 없이 파기. 계약 체결 시 관련 법령에 따라 보존</p>
-    <p><b>4. 제3자 제공</b> — 제공하지 않습니다. 다만 접수 전송을 위해 폼 전송 서비스(FormSubmit)가 이메일 전달을 대행합니다.</p>
+    <p><b>4. 제3자 제공</b> — 제공하지 않습니다. 다만 접수 전송을 위해 이메일 발송 서비스(Brevo)가 이메일 전달을 대행합니다.</p>
     <p><b>5. 동의 거부 권리</b> — 동의를 거부할 수 있으며, 이 경우 온라인 접수가 제한됩니다. 전화(010-8320-7780) 접수는 가능합니다.</p>
     <p><b>6. 개인정보 보호책임자</b> — 배효성 (majam@naver.com, 010-8320-7780)</p>
     <p style="color:#888;font-size:12px;margin-top:8px">시행일: 2026년 7월 6일</p>
@@ -314,9 +311,10 @@ var fileErr = document.getElementById('fileErr');
 var fileInfo = document.getElementById('fileInfo');
 var fileList = document.getElementById('fileList');
 var dropzone = document.getElementById('dropzone');
-var MAX_FILES = 10 * 1024 * 1024;
-var MAX_DIM = 1600;
-var JPEG_Q = 0.8;
+var MAX_FILES = 3 * 1024 * 1024;
+var TARGET_FILE_SIZE = 900 * 1024;
+var DIM_STEPS = [1600, 1200, 900, 700];
+var Q_STEPS = [0.8, 0.65, 0.5, 0.4];
 var attached = [];
 
 function fmtMB(b){ return (b / 1048576).toFixed(1) + 'MB'; }
@@ -372,26 +370,48 @@ dropzone.addEventListener('drop', function(e){
   addFiles(e.dataTransfer.files);
 });
 
+function drawToBlob(img, dim, quality){
+  return new Promise(function(resolve){
+    var w = img.width, h = img.height;
+    if (w > dim || h > dim) {
+      var r = Math.min(dim / w, dim / h);
+      w = Math.round(w * r); h = Math.round(h * r);
+    }
+    var canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    canvas.toBlob(function(blob){ resolve(blob); }, 'image/jpeg', quality);
+  });
+}
+
 function compressImage(file){
   return new Promise(function(resolve){
     if (!/^image\/(jpeg|png|webp|heic|heif)/i.test(file.type) || file.size < 400 * 1024) { resolve(file); return; }
     var img = new Image();
     var url = URL.createObjectURL(file);
     img.onload = function(){
-      var w = img.width, h = img.height;
-      if (w > MAX_DIM || h > MAX_DIM) {
-        var r = Math.min(MAX_DIM / w, MAX_DIM / h);
-        w = Math.round(w * r); h = Math.round(h * r);
+      var step = 0;
+      var best = null;
+      function tryStep(){
+        if (step >= DIM_STEPS.length) {
+          URL.revokeObjectURL(url);
+          if (best && best.size < file.size) {
+            resolve(new File([best], file.name.replace(/\.\w+$/, '') + '.jpg', {type: 'image/jpeg'}));
+          } else resolve(file);
+          return;
+        }
+        drawToBlob(img, DIM_STEPS[step], Q_STEPS[step]).then(function(blob){
+          if (blob && (!best || blob.size < best.size)) best = blob;
+          if (blob && blob.size <= TARGET_FILE_SIZE) {
+            URL.revokeObjectURL(url);
+            resolve(new File([blob], file.name.replace(/\.\w+$/, '') + '.jpg', {type: 'image/jpeg'}));
+            return;
+          }
+          step++;
+          tryStep();
+        });
       }
-      var canvas = document.createElement('canvas');
-      canvas.width = w; canvas.height = h;
-      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      canvas.toBlob(function(blob){
-        URL.revokeObjectURL(url);
-        if (blob && blob.size < file.size) {
-          resolve(new File([blob], file.name.replace(/\.\w+$/, '') + '.jpg', {type: 'image/jpeg'}));
-        } else resolve(file);
-      }, 'image/jpeg', JPEG_Q);
+      tryStep();
     };
     img.onerror = function(){ URL.revokeObjectURL(url); resolve(file); };
     img.src = url;
@@ -402,16 +422,76 @@ fileInput.addEventListener('change', function(){
   addFiles(fileInput.files);
 });
 
+function fileToBase64(file){
+  return new Promise(function(resolve, reject){
+    var reader = new FileReader();
+    reader.onload = function(){ resolve(reader.result.split(',')[1]); };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function showSentBanner(){
+  var banner = document.createElement('div');
+  banner.className = 'sent-banner';
+  banner.innerHTML = '접수가 완료되었습니다. 확인 후 빠르게 연락드리겠습니다.';
+  var closeBtn = document.createElement('button');
+  closeBtn.type = 'button';
+  closeBtn.textContent = '확인';
+  closeBtn.onclick = function(){ banner.remove(); };
+  banner.appendChild(closeBtn);
+  document.body.insertBefore(banner, document.body.children[1]);
+  window.scrollTo(0, 0);
+  setTimeout(function(){ if (banner.parentNode) banner.remove(); }, 10000);
+}
+
 document.getElementById('reqForm').addEventListener('submit', function(e){
-  if (!validatePhone()) { e.preventDefault(); phoneInput.focus(); return; }
-  if (attachedSize() > MAX_FILES) { e.preventDefault(); fileErr.style.display = 'block'; return; }
-  syncInput();
-  var site = document.getElementById('f_site').value.trim();
-  var type = document.getElementById('f_type').value;
-  document.getElementById('f_subject').value = '[공사 의뢰] ' + site + ' - ' + type;
+  e.preventDefault();
+  if (!validatePhone()) { phoneInput.focus(); return; }
+  if (attachedSize() > MAX_FILES) { fileErr.style.display = 'block'; return; }
+
+  var submitErr = document.getElementById('submitErr');
+  submitErr.style.display = 'none';
+
   var btn = document.getElementById('submitBtn');
   btn.disabled = true;
   btn.textContent = '전송 중...';
+
+  Promise.all(attached.map(function(file){
+    return fileToBase64(file).then(function(content){
+      return { name: file.name, content: content };
+    });
+  })).then(function(files){
+    return fetch('/api/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        site: document.getElementById('f_site').value.trim(),
+        name: document.getElementById('f_name').value.trim(),
+        addr: document.getElementById('f_addr').value.trim(),
+        addr2: document.getElementById('f_addr2').value.trim(),
+        phone: document.getElementById('f_phone').value.trim(),
+        type: document.getElementById('f_type').value,
+        detail: document.getElementById('f_detail').value.trim(),
+        files: files
+      })
+    });
+  }).then(function(res){
+    if (!res.ok) return res.json().then(function(data){ throw new Error(data.error || '전송 실패'); });
+    return res.json();
+  }).then(function(){
+    document.getElementById('reqForm').reset();
+    attached = [];
+    renderList();
+    fileInfo.textContent = '';
+    showSentBanner();
+  }).catch(function(err){
+    console.error(err);
+    submitErr.style.display = 'block';
+  }).finally(function(){
+    btn.disabled = false;
+    btn.textContent = '의뢰 접수하기';
+  });
 });
 
 var privacyModal = document.getElementById('privacyModal');
@@ -423,17 +503,7 @@ privacyModal.addEventListener('click', function(e){ if (e.target === privacyModa
 
 if (location.search.indexOf('sent=1') !== -1) {
   history.replaceState(null, '', location.pathname);
-  window.scrollTo(0, 0);
-  var banner = document.createElement('div');
-  banner.className = 'sent-banner';
-  banner.innerHTML = '접수가 완료되었습니다. 확인 후 빠르게 연락드리겠습니다.';
-  var closeBtn = document.createElement('button');
-  closeBtn.type = 'button';
-  closeBtn.textContent = '확인';
-  closeBtn.onclick = function(){ banner.remove(); };
-  banner.appendChild(closeBtn);
-  document.body.insertBefore(banner, document.body.children[1]);
-  setTimeout(function(){ if (banner.parentNode) banner.remove(); }, 10000);
+  showSentBanner();
 }
 </script>
 
