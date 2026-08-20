@@ -204,6 +204,11 @@ footer a{color:#fff;text-decoration:none}
           </div>
         </div>
         <div class="field">
+          <label>이메일 (선택)</label>
+          <input type="email" id="f_email" name="이메일" placeholder="답장 받으실 이메일 (선택)">
+          <p class="err" id="emailErr">올바른 이메일 형식이 아닙니다.</p>
+        </div>
+        <div class="field">
           <label>공사 내용</label>
           <textarea id="f_detail" name="공사내용" placeholder="공사 위치, 증상(누수 부위 등), 희망 시기 등을 적어주세요"></textarea>
         </div>
@@ -305,6 +310,20 @@ function validatePhone(){
   return ok;
 }
 phoneInput.addEventListener('blur', function(){ if (this.value) validatePhone(); });
+
+var emailInput = document.getElementById('f_email');
+var emailErr = document.getElementById('emailErr');
+var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function validateEmail(){
+  if (!emailInput.value) { emailInput.classList.remove('invalid'); emailErr.style.display = 'none'; return true; }
+  var ok = EMAIL_RE.test(emailInput.value.trim());
+  emailInput.classList.toggle('invalid', !ok);
+  emailErr.style.display = ok ? 'none' : 'block';
+  return ok;
+}
+emailInput.addEventListener('input', function(){ this.classList.remove('invalid'); emailErr.style.display = 'none'; });
+emailInput.addEventListener('blur', function(){ if (this.value) validateEmail(); });
 
 var fileInput = document.getElementById('f_files');
 var fileErr = document.getElementById('fileErr');
@@ -448,6 +467,7 @@ function showSentBanner(){
 document.getElementById('reqForm').addEventListener('submit', function(e){
   e.preventDefault();
   if (!validatePhone()) { phoneInput.focus(); return; }
+  if (!validateEmail()) { emailInput.focus(); return; }
   if (attachedSize() > MAX_FILES) { fileErr.style.display = 'block'; return; }
 
   var submitErr = document.getElementById('submitErr');
@@ -471,6 +491,7 @@ document.getElementById('reqForm').addEventListener('submit', function(e){
         addr: document.getElementById('f_addr').value.trim(),
         addr2: document.getElementById('f_addr2').value.trim(),
         phone: document.getElementById('f_phone').value.trim(),
+        email: document.getElementById('f_email').value.trim(),
         type: document.getElementById('f_type').value,
         detail: document.getElementById('f_detail').value.trim(),
         files: files
