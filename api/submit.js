@@ -55,7 +55,7 @@ module.exports = async function handler(req, res) {
     const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email || '');
 
     const payload = {
-      sender: { name: '페인트7 홈페이지', email: process.env.BREVO_SENDER_EMAIL },
+      sender: { name: name + ' (' + site + ')', email: process.env.BREVO_SENDER_EMAIL },
       to: [{ email: TO_EMAIL }],
       replyTo: isValidEmail ? { email: email } : { email: process.env.BREVO_SENDER_EMAIL },
       subject: '[공사 의뢰] ' + site + ' - ' + type,
